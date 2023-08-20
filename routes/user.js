@@ -1,8 +1,33 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const { User } = require('../models');
+const passport = require('passport');
 
 const router = express.Router();
+
+// 미들웨어 확장 방식을 이용해 req, res, next를 사용할 수 있도록 조치해준다
+router.post('/login', (req, res, next) => {
+    passport.authenticate('local', (serverErr, user, clientErr) => {
+        if (serverErr) {
+            console.error(serverErr);
+            return next(serverErr);
+        }
+        
+        if (clientErr) {
+            return res.status(401).send(info.reason);
+        }
+
+        return req.login(user, async(loginErr) => {
+            // passport라이브러리부분에서 에러가 발생했을 경우 처리
+            if (loginErr) {
+                console.error(loginErr);
+                return next(loginErr);
+            }
+
+            return res.status(200).json(user);
+        })
+    })(req, res, next);
+});
 
 router.post('/', async (req, res, next) => { // POST /user/
     try {
