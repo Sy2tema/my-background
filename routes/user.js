@@ -54,4 +54,10 @@ router.post('/', async (req, res, next) => { // POST /user/
     }
 });
 
+router.push('/user/logout', (req, res) => {
+    req.logout();
+    req.session.destroy();
+    res.send('Logout success');
+});
+
 module.exports = router;
