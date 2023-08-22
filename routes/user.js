@@ -14,10 +14,10 @@ router.post('/login', (req, res, next) => {
         }
         
         if (clientErr) {
-            return res.status(401).send(info.reason);
+            return res.status(401).send(clientErr.reason);
         }
 
-        return req.login(user, async(loginErr) => {
+        return req.login(user, async (loginErr) => {
             // passport라이브러리부분에서 에러가 발생했을 경우 처리
             if (loginErr) {
                 console.error(loginErr);
@@ -25,7 +25,7 @@ router.post('/login', (req, res, next) => {
             }
 
             return res.status(200).json(user);
-        })
+        });
     })(req, res, next);
 });
 
