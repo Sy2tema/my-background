@@ -70,10 +70,15 @@ router.post('/', async (req, res, next) => { // POST /user/
     }
 });
 
-router.push('/user/logout', (req, res) => {
-    req.logout();
-    req.session.destroy();
-    res.send('Logout success');
+router.post('/logout', (req, res, next) => {
+    req.logout(err => {
+        if (err) {
+            return next(err);
+        } else {
+            req.session.destroy();
+            res.send('Logout success');
+        }
+    });
 });
 
 module.exports = router;
