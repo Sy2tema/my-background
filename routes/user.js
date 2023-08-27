@@ -1,12 +1,13 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const { User, Post } = require('../models');
+const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
 const passport = require('passport');
 
 const router = express.Router();
 
 // 미들웨어 확장 방식을 이용해 req, res, next를 사용할 수 있도록 조치해준다
-router.post('/login', (req, res, next) => {
+router.post('/login', isNotLoggedIn, (req, res, next) => {
     passport.authenticate('local', (serverErr, user, clientErr) => {
         if (serverErr) {
             console.error(serverErr);
@@ -45,7 +46,7 @@ router.post('/login', (req, res, next) => {
     })(req, res, next);
 });
 
-router.post('/', async (req, res, next) => { // POST /user/
+router.post('/', isNotLoggedIn, async (req, res, next) => { // POST /user/
     try {
         const existUser = await User.findOne({
             where: {
@@ -70,7 +71,7 @@ router.post('/', async (req, res, next) => { // POST /user/
     }
 });
 
-router.post('/logout', (req, res, next) => {
+router.post('/logout', isLoggedIn, (req, res, next) => {
     req.logout(err => {
         if (err) {
             return next(err);
