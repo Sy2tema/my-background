@@ -6,6 +6,39 @@ const passport = require('passport');
 
 const router = express.Router();
 
+router.get('/', async (req, res, next) => { // GET /user
+    try {
+        if (req.user) { // 로그인 쿠키가 존재할 경우 로그인 상태를 유지한다
+            const fullUserInfoWithoutPwd = await User.findOne({
+                where: { id: req.user.id },
+                attributes: {
+                    exclude: ['password'],
+                },
+                include: [{
+                    model: Post,
+                    attributes: ['id'],
+                }, {
+                    model: User,
+                    as: 'Followings',
+                    attributes: ['id'],
+                }, {
+                    model: User,
+                    as: 'Followers',
+                    attributes: ['id'],
+                }]
+            });
+    
+            res.status(200).json(fullUserInfoWithoutPwd);
+        } else {
+            res.status(200).json(null);
+        }
+        
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+});
+
 // 미들웨어 확장 방식을 이용해 req, res, next를 사용할 수 있도록 조치해준다
 router.post('/login', isNotLoggedIn, (req, res, next) => {
     passport.authenticate('local', (serverErr, user, clientErr) => {
@@ -32,12 +65,15 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
                 },
                 include: [{
                     model: Post,
+                    attributes: ['id'],
                 }, {
                     model: User,
                     as: 'Followings',
+                    attributes: ['id'],
                 }, {
                     model: User,
                     as: 'Followers',
+                    attributes: ['id'],
                 }]
             });
 
