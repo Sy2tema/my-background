@@ -92,15 +92,27 @@ router.delete('/:postId/like', isLoggedIn, async (req, res, next) => { // DELETE
         if (!post) return res.status(403).send('Post not exist');
 
         await post.removeLikers(req.user.id);
-        res.json({ PostId: post.id, UserId: req.user.id });
+        res.status(200).json({ PostId: post.id, UserId: req.user.id });
     } catch (error) {
         console.error(error);
         next(error);
     }
 });
 
-router.delete('/', isLoggedIn, (req, res) => {
-    res.json({id: 1});
+router.delete('/:postId', isLoggedIn, async (req, res, next) => { // DELETE /post/1
+    try {
+        await Post.destroy({
+            where: { 
+                id: req.params.postId,
+                UserId: req.user.id,
+            },
+        });
+
+        res.status(200).json({ PostId: parseInt(req.params.postId) });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
 });
 
 module.exports = router;
