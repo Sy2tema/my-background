@@ -48,7 +48,7 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
         }
         
         if (clientErr) {
-            return res.status(401).send(clientErr.reason);
+            return res.status(401).send(clientErr.message);
         }
 
         return req.login(user, async (loginErr) => {
@@ -116,6 +116,21 @@ router.post('/logout', isLoggedIn, (req, res, next) => {
             res.send('Logout success');
         }
     });
+});
+
+router.patch ('/nickname', isLoggedIn, async (req, res, next) => { // PATCH /user/nickname
+    try {
+        await User.update({
+            nickname: req.body.nickname,
+        }, {
+            where: { id: req.user.id },
+        });
+
+        res.status(200).json({ nickname: req.body.nickname });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
 });
 
 module.exports = router;
