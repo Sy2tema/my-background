@@ -118,7 +118,7 @@ router.post('/logout', isLoggedIn, (req, res, next) => {
     });
 });
 
-router.patch ('/nickname', isLoggedIn, async (req, res, next) => { // PATCH /user/nickname
+router.patch('/nickname', isLoggedIn, async (req, res, next) => { // PATCH /user/nickname
     try {
         await User.update({
             nickname: req.body.nickname,
@@ -127,6 +127,74 @@ router.patch ('/nickname', isLoggedIn, async (req, res, next) => { // PATCH /use
         });
 
         res.status(200).json({ nickname: req.body.nickname });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+});
+
+router.patch('/:userId/follow', isLoggedIn, async (req, res, next) => { // PATCH /user/1/follow
+    try {
+        const user = await User.findOne({ where: { id: req.params.userId }});
+
+        if (!user) {
+            return res.status(403).send('Not exist user');
+        }
+        
+        await user.addFollowers(req.user.id);
+
+        res.status(200).json({ UserId: parseInt(req.params.userId) });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+});
+
+router.delete('/:userId/follow', isLoggedIn, async (req, res, next) => { // DELETE /user/1/follow
+    try {
+        const user = await User.findOne({ where: { id: req.params.userId }});
+
+        if (!user) {
+            return res.status(403).send('Not exist user');
+        }
+        
+        await user.removeFollowers(req.user.id);
+
+        res.status(200).json({ UserId: parseInt(req.params.userId) });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+});
+
+router.get('/followers', isLoggedIn, async (req, res, next) => { // GET /user/followers
+    try {
+        const user = await User.findOne({ where: { id: req.params.userId }});
+
+        if (!user) {
+            return res.status(403).send('Not exist user');
+        }
+        
+        const followers = await user.getFollowers(req.user.id);
+
+        res.status(200).json(followers);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+});
+
+router.get('/followings', isLoggedIn, async (req, res, next) => { // GET /user/followings
+    try {
+        const user = await User.findOne({ where: { id: req.params.userId }});
+
+        if (!user) {
+            return res.status(403).send('Not exist user');
+        }
+        
+        const followings = await user.getFollowings(req.user.id);
+
+        res.status(200).json(followings);
     } catch (error) {
         console.error(error);
         next(error);
