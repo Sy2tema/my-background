@@ -4,6 +4,9 @@
 # production
 /build
 
+# image storage
+/uploads
+
 # misc
 .DS_Store
 .env
