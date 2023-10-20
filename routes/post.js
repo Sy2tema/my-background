@@ -15,12 +15,23 @@ try {
 }
 
 
-router.post('/', isLoggedIn, async (req, res, next) => { // POST /post
+router.post('/', isLoggedIn, upload.none(), async (req, res, next) => { // POST /post
+    console.log(req.body.content);
     try {
         const post = await Post.create({
             content: req.body.content,
             UserId: req.user.id,
         });
+
+        if (req.body.image) {
+            if (Array.isArray(req.body.image)) { // 사진이 여러개일 경우 배열로 데이터가 들어오기 때문에 각각 나누어서 DB에 저장한다
+                const images = await Promise.all(req.body.Image.map((image) => Image.create({ src: image })));
+                await post.addImages(images);
+            } else {
+                const image = await Image.create({ src: req.body.Image });
+                await post.addImages(image);
+            }
+        }
 
         const fullPost = await Post.findOne({
             where: { id: post.id },
@@ -55,9 +66,10 @@ const upload = multer({
             done(null, 'uploads');
         },
         filename(req, file, done) { // sample.png
+            file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8');
             const extend = path.extname(file.originalname); // .png
             const basename = path.basename(file.originalname, extend); // sample
-            done(null, basename + new Date().getTime() + extend); // sample20231009.png
+            done(null, basename + '_' + new Date().getTime() + extend); // sample20231009.png
         }
     }),
     limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
