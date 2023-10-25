@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { Post, Image, User, Comment } = require('../models');
+const { Post, Image, User, Comment, Hashtag } = require('../models');
 const { isLoggedIn } = require('./middlewares');
 
 const router = express.Router();
@@ -31,10 +31,26 @@ const upload = multer({
 
 router.post('/', isLoggedIn, upload.none(), async (req, res, next) => { // POST /post
     try {
+        const hashtags = req.body.content.match(/#[^\s#]+/g);
+        // Tag tAg와 같이 대소문자가 분리되어있을 때 별도의 태그로 인식하는 문제 개선
+        const normalizedHashtags = hashtags?.map(tag => tag.slice(1).toLowerCase()) || [];
+        const uniqueHashtags = Array.from(new Set(normalizedHashtags));
+
         const post = await Post.create({
             content: req.body.content,
             UserId: req.user.id,
         });
+
+        if (uniqueHashtags.length) {
+            // 같은 해시태그 정보가 있으면 무시하고 없으면 저장한다
+            const result = await Promise.all(uniqueHashtags.map((tag) => 
+                Hashtag.findOrCreate({
+                    where: { name: tag },
+                })
+            )); // [[#node, true], [#javascript, true]]
+
+            await post.addHashtags(result.map((value) => value[0]));
+        }
 
         if (req.body.imagePaths) {
             if (Array.isArray(req.body.imagePaths)) { // 사진이 여러개일 경우 배열로 데이터가 들어오기 때문에 각각 나누어서 DB에 저장한다
