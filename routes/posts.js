@@ -26,7 +26,16 @@ router.get('/', async (req, res, next) => { // GET /posts
                 model: User, // 좋아요 누른 유저
                 as: 'Likers',
                 attributes: ['id'],
-            }]
+            }, {
+                model: Post,
+                as: 'Retweet',
+                include: [{
+                    model: User,
+                    attributes: ['id', 'nickname'],
+                }, {
+                    model: Image,
+                }],
+            }],
         });
 
         res.status(200).json(posts);
