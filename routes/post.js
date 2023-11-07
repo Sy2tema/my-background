@@ -154,7 +154,7 @@ router.post('/:postId/retweet', isLoggedIn, async (req, res, next) => { // POST 
 
         const retweet = await Post.create({
             UserId: req.user.id,
-            PostId: retweetTargetId,
+            RetweetId: retweetTargetId,
             content: 'retweet',
         });
 
