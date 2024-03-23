@@ -7,6 +7,7 @@ const passport = require('passport');
 const router = express.Router();
 
 router.get('/', async (req, res, next) => { // GET /user
+    console.log(req.headers);
     try {
         if (req.user) { // 로그인 쿠키가 존재할 경우 로그인 상태를 유지한다
             const fullUserInfoWithoutPwd = await User.findOne({
@@ -77,6 +78,12 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
                 }]
             });
 
+            res.cookie('userInfo', JSON.stringify(user), {
+                httpOnly: true,
+                // secure: true, // HTTPS에서만 사용
+                sameSite: 'Lax'
+            });
+
             return res.status(200).json(fullUserInfoWithoutPwd);
         });
     })(req, res, next);
@@ -113,6 +120,7 @@ router.post('/logout', isLoggedIn, (req, res, next) => {
             return next(err);
         } else {
             req.session.destroy();
+            res.clearCookie('userInfo'); // 쿠키 제거
             res.send('Logout success');
         }
     });
