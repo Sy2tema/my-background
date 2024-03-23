@@ -5,6 +5,8 @@ const env = process.env.NODE_ENV || 'development';
 const config = require('../config/config')[env];
 const db = {};
 
+// unknown DB 가 나올 경우
+// npx sequelize db:create 를 이용해 Database를 미리 생성해줘야 한다
 const sequelize = new Sequelize(config.database, config.username, config.password, config);
 
 db.Comment = require('./comment')(sequelize, Sequelize);
